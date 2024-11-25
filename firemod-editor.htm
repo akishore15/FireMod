@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FireMod - Build It!</title>
+    <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.17.0/full/pyodide.js"></script>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+        }
+        #toolbox {
+            display: none;
+        }
+        #blocklyDiv {
+            height: 60%;
+            width: 100%;
+        }
+        #pythonTerminal {
+            height: 20%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #output {
+            padding: 10px;
+            height: 20%;
+            overflow-y: auto;
+            background-color: #f4f4f4;
+            border-top: 1px solid #ddd;
+        }
+        textarea {
+            width: 80%;
+            height: 80px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #fff;
+            margin-bottom: 10px;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #333;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>FireMod</h1>
+    <button onclick="generateCode()">Generate Code</button>
+    <div id="blocklyDiv"></div>
+    <div id="pythonTerminal">
+        <textarea id="pythonCode" placeholder="Write your Python code here..."></textarea>
+        <button onclick="runPythonCode()">Run Python Code</button>
+    </div>
+    <div id="output"></div>
+    <xml id="toolbox" style="display: none">
+        <category name="Logic" colour="%{BKY_LOGIC_HUE}">
+            <block type="controls_if"></block>
+            <block type="logic_compare"></block>
+        </category>
+        <category name="Loops" colour="%{BKY_LOOPS_HUE}">
+            <block type="controls_repeat_ext">
+                <value name="TIMES">
+                    <shadow type="math_number">
+                        <field name="NUM">10</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="controls_whileUntil"></block>
+        </category>
+        <category name="Math" colour="%{BKY_MATH_HUE}">
+            <block type="math_number">
+                <field name="NUM">123</field>
+            </block>
+            <block type="math_arithmetic"></block>
+        </category>
+        <category name="Text" colour="%{BKY_TEXTS_HUE}">
+            <block type="text"></block>
+            <block type="text_print"></block>
+        </category>
+    </xml>
+    <script>
+        var workspace = Blockly.inject('blocklyDiv', {
+            toolbox: document.getElementById('toolbox')
+        });
+
+        function generateCode() {
+            var code = Blockly.JavaScript.workspaceToCode(workspace);
+            document.getElementById('output').innerText = code;
+        }
+
+        async function runPythonCode() {
+            const code = document.getElementById("pythonCode").value;
+            const outputElement = document.getElementById("output");
+            outputElement.textContent = "Running...";
+            await loadPyodide();
+            let pyodide = await pyodideReady;
+            try {
+                let result = await pyodide.runPythonAsync(code);
+                outputElement.textContent = result;
+            } catch (error) {
+                outputElement.textContent = error.message;
+            }
+        }
+    </script>
+</body>
+</html>
